@@ -13,6 +13,7 @@ from mvpa2.datasets.base import Dataset
 from mvpa2.mappers.fxy import FxyMapper
 from mvpa2.misc.surfing.queryengine import SurfaceQueryEngine
 from mvpa2.measures.searchlight import Searchlight
+from mvpa2.measures.base import Measure
 from mvpa2.mappers.zscore import zscore
 import scipy.stats
 
@@ -31,10 +32,23 @@ class MeanFeatureMeasure(Measure):
 
     def _call(self, dataset):
         return Dataset(samples=np.mean(dataset.samples, axis=1))
-
     
     
 def compute_seed_means(measure, queryengine, ds, roi_ids):
+    """
+    Parameters:
+    ----------
+    measure: a PyMVPA measure passed to the Searchlight.
+    queryengine: a trained PyMVPA SurfaceQueryEngine.
+    ds: a single PyMVPA dataset (samples: timeseries, features: vertices)
+    roi_ids: the vertex indices where each searchlight will be centered.
+    
+    Returns:
+    --------
+    seed_data: dataset with the mean timeseries for a searchlight centered on each ROI_id.
+
+    """
+
     # Seed data is the mean timeseries for each searchlight
     seed_data = Searchlight(measure, queryengine=queryengine, 
                             nproc=1, roi_ids=roi_ids.copy())
@@ -45,6 +59,20 @@ def compute_seed_means(measure, queryengine, ds, roi_ids):
     return seed_data
 
 def compute_connectomes(datasets, queryengine, target_indices):
+    """
+    Parameters:
+    -----------
+    datasets: a list of PyMVPA datasets, one per subject.
+    queryengine: the trained PyMVPA Surface queryengine, trained on the surface defining this data
+    and the searchlight radius matching your analysis.
+    target_indices: the indices of the vertices where each searchlight for a connectivity target will be centered. 
+
+    Returns:
+    -------
+    connectomes: a list of connectivity matrices, where each entry is the correlation between the timeseries of a
+    corresponding searchlight centered on each a connectivity seed and a connectivity target.
+    """
+
     conn_metric = lambda x,y: np.dot(x.samples, y.samples)/x.nsamples
     connectivity_mapper = FxyMapper(conn_metric)
     mean_feature_measure = MeanFeatureMeasure()
@@ -66,9 +94,19 @@ def compute_connectomes(datasets, queryengine, target_indices):
         connectomes.append(connectome)
     return connectomes
 
-# determines which node indices belong to a surface of a given resolution,
-# excluding the medial wall.
+
 def get_node_indices(hemi, surface_res=None):
+    """
+    Parameters:
+    -----------
+    hemi: hemisphere (can be "r", "l", or "b" for both hemis together)
+    surface_res: defaults to the full resolution of your surface (in this case, 10242). 
+
+    Returns:
+    --------
+    idx: a list of the indices of nodes on a surface of your desired resolution but are not in the medial wall.
+    """
+
     if surface_res == None:
         surface_res = utils.SURFACE_RESOLUTION
     if hemi == 'b':
@@ -80,8 +118,17 @@ def get_node_indices(hemi, surface_res=None):
     idx = np.where(mask[:surface_res])[0]
     return idx
 
-# uses .white and .pial files to create a Surface
+
 def get_freesurfer_surfaces(hemi):
+    """
+    Parameters:
+    -----------
+    hemi: hemisphere (can be 'r','l','b')
+
+    Returns:
+    surf: a freesurfer surface created with the .white and .pial files.
+    """
+
     import nibabel as nib
     from mvpa2.support.nibabel.surf import Surface
     if hemi == 'b':
@@ -95,9 +142,20 @@ def get_freesurfer_surfaces(hemi):
     return surf
 
 
-# This function uses pymvpa surface query engines to create a list of lists, where each sub-list is all 
-# the nodes within a searchlight of radius X centered on the first node in the list.
+
 def get_searchlights(hemi,radius):
+    """
+    Parameters:
+    -----------
+    hemi: hemisphere (can be 'r','l','b')
+    radius: radius of the searchlights you want.
+
+    Returns:
+    --------
+    searchlights: a list of lists, where each sub-list is all the nodes within a searchlight of 
+    radius X centered on the first node in the list. Uses the PyMVPA surface query engine to do this.
+
+    """
     if radius is None:
         radius = utils.SEARCHLIGHT_RADIUS 
     savename = os.path.join(utils.basedir,'{R}mm_searchlights_{S}h.npy'.format(R=radius,S=hemi))

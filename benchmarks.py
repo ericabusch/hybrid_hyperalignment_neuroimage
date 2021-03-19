@@ -4,9 +4,20 @@ import numpy as np
 import os, glob, sys
 from scipy.spatial.distance import cdist
 
-# run intersubject correlation on a numpy array of shape (n_subjects, n_timepoints, n_features)
-# compares each subject to the group mean of the others.
+
 def vertex_isc(data):
+    """
+    Performs an intersubject correlation of vertex response profiles, comparing each subject's response profiles at each vertex
+    to the mean response profile of all the other subjects.  
+
+    Parameters:
+    ----------
+    data: a n_subjects-length list of (timeseries, features) datasets upon which to perform ISC.
+
+    Returns:
+    -------
+    all_results: a numpy array of shape (n_subjects, n_features) of ISC values.
+    """
     all_results = np.ndarray((data.shape[0],data.shape[2]), dtype=float)
     all_subjs = np.arange(data.shape[0])
     for v in np.arange(data.shape[2]):
@@ -19,9 +30,21 @@ def vertex_isc(data):
             all_results[subj, v] = r
     return np.array(all_results)
 
-# computes the dense connectomes on input dataset and 
-# then passes to the vertex ISC function
+
 def dense_connectivity_profile_isc(data):
+    """
+    Takes the data and creates a vertex-by-vertex full connectivity matrix for each subject, then performs ISC on the
+    connectivity profiles.
+    
+    Parameters:
+    ----------
+    data: a n_subjects-length list of (timeseries, features) datasets from which to compute a connectivity matrix.
+
+    Retu
+    -------
+    all_results: a numpy array of shape (n_subjects, n_features) of ISC values.
+
+    """
     from mvpa2.datasets.base import Dataset
     from mvpa2.mappers.fxy import FxyMapper
     
@@ -39,6 +62,20 @@ def dense_connectivity_profile_isc(data):
 
 ## all of this runs between subject multivariate time segment classifications
 def searchlight_timepoint_clf(data, window_size=5, buffer_size=10, NPROC=16):
+    """
+    Performs a sliding window between-subject multivariate classification on each time segment. 
+
+    Parameters:
+    -----------
+    data: a n_subjects-length list of (timeseries, features) datasets from which to compute a connectivity matrix.
+    window_size: defaults to 5. The number of TRs to be considered in each classification.
+    buffer_size: defaults to 10. The number of TRs to be excluded from the classification before and after the window.
+    NPROC: defaults to 16. The number of parallel processes you can use. 
+
+    Returns:
+    --------
+    results: a (n_subjects, features) array of classification accuracies.
+    """
     from joblib import Parallel, delayed
     searchlights = get_searchlights('b', utils.SEARCHLIGHT_RADIUS)
     results = []
@@ -73,7 +110,7 @@ def run_clf_job(train_ds_sl, test_ds_sl, n_timepoints, window_size, buffer_size)
         dist = cdist(train_,test_[np.newaxis,:],metric='correlation')
         winner = np.argmin(dist)
         clf_errors.append(int(winner == target_index))
-    return np.mean(np.array(clf_errors)    
+    return np.mean(np.array(clf_errors))  
 
 def get_foil_startpoints(n_timepoints, t0, window_size, buffer_size):
     pre_target, post_target = get_foil_boundaries(np.arange(n_timepoints),t0, window_size, buffer_size)
