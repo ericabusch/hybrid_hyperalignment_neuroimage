@@ -4,4 +4,4 @@
 
 This directory contains the hyperalignment procedures for response hyperalignment, connectivity hyperalignment, and hybrid hyperalignment used in the H2A manuscript. It also contains all scripts used in the final analyses of the Whiplash, Raiders, and Budapest datasets. 
 
-For more information, check out our [paper](doi.org/10.1101/2020.11.25.398883), in press at NeuroImage. 
+For more information, check out our [paper](https://www.biorxiv.org/content/10.1101/2020.11.25.398883v1), in press at NeuroImage. 
