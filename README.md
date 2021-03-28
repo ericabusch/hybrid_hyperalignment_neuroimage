@@ -5,7 +5,7 @@
 
 This directory contains the hyperalignment procedures for response hyperalignment, connectivity hyperalignment, and hybrid hyperalignment used in the H2A manuscript. It also contains all scripts used in the final analyses of the Whiplash, Raiders, and Budapest datasets. 
 
-For more information, check out our [paper](https://www.biorxiv.org/content/10.1101/2020.11.25.398883v1), in press at NeuroImage. 
+For more information, check out our [paper](https://www.sciencedirect.com/science/article/pii/S1053811921002524?via%3Dihub), now published in NeuroImage.
 
 ### Scripts & Functions
 - `[dataset]_utils.py` : One for each of the three datasets used here (Raiders, Whiplash, & Budapest). These scripts include relevant paths, subject IDs, and dataset-specific information, as well as functions for accessing each dataset.   
