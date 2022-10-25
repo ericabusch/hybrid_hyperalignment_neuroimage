@@ -3,6 +3,9 @@
 
 ### Erica Busch, March 2021   
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7246743.svg)](https://doi.org/10.5281/zenodo.7246743)
+
+
 This directory contains the hyperalignment procedures for response hyperalignment, connectivity hyperalignment, and hybrid hyperalignment used in the H2A manuscript. It also contains all scripts used in the final analyses of the Whiplash, Raiders, and Budapest datasets. 
 
 For more information, check out our [paper](https://www.sciencedirect.com/science/article/pii/S1053811921002524?via%3Dihub), now published in NeuroImage.
